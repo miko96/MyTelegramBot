@@ -34,7 +34,7 @@ steps:
     command: login
     containerRegistry: 'Container Registry Connection'
 
-- script: docker image push $(dockerImageTag)
+- script: docker image push containerregistry99.azurecr.io/mytelegrambot:$(Build.BuildNumber)
   displayName: 'Push Docker Image'
 
 - task: Docker@2
