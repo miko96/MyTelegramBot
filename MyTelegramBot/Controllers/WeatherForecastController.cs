@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Telegram.Bot;
+using Telegram.Bot.Requests;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace MyTelegramBot.Controllers
 {
@@ -10,29 +15,27 @@ namespace MyTelegramBot.Controllers
     [Route("[controller]")]
     public class WebhookController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-        
-        private readonly ILogger<WebhookController> _logger;
+        private readonly ITelegramBotClient _client;
 
-        public WebhookController(ILogger<WebhookController> logger)
+        public WebhookController(ITelegramBotClient client)
         {
-            _logger = logger;
+            _client = client;
         }
 
-        [HttpGet]
-        public IEnumerable<WeatherForecast> Get()
+        [HttpPost]
+        public async Task PostAsync([FromBody] Update update)
         {
-            var rng = new Random();
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
-            })
-            .ToArray();
+            await _client.SendTextMessageAsync(new ChatId(update.Message.Chat.Id), "Привет");
+        }
+
+        [HttpGet("set")]
+        public Task<bool> SetWebhook()
+        {
+            return _client.MakeRequestAsync(
+                new SetWebhookRequest("https://mytelegrambot2.azurewebsites.net/webhook", null)
+                {
+                    AllowedUpdates = new[] { UpdateType.Message }
+                });
         }
     }
 }
