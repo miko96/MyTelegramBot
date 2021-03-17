@@ -19,11 +19,9 @@ namespace MyTelegramBot.Controllers
         }
 
         [HttpPost]
-        public async Task PostAsync()
+        public async Task PostAsync([FromBody] Update update)
         {
-
-            await Task.CompletedTask;
-            //await _client.SendTextMessageAsync(new ChatId(update.Message.Chat.Id), "Привет");
+            await _client.SendTextMessageAsync(new ChatId(update.Message.Chat.Id), "Привет");
         }
 
         [HttpGet]
