@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Requests;
 using Telegram.Bot.Types;
@@ -23,16 +19,24 @@ namespace MyTelegramBot.Controllers
         }
 
         [HttpPost]
-        public async Task PostAsync([FromBody] Update update)
+        public async Task PostAsync()
         {
-            await _client.SendTextMessageAsync(new ChatId(update.Message.Chat.Id), "Привет");
+
+            await Task.CompletedTask;
+            //await _client.SendTextMessageAsync(new ChatId(update.Message.Chat.Id), "Привет");
+        }
+
+        [HttpGet]
+        public Task<WebhookInfo> GetHook()
+        {
+            return _client.GetWebhookInfoAsync();
         }
 
         [HttpGet("set")]
         public Task<bool> SetWebhook()
         {
             return _client.MakeRequestAsync(
-                new SetWebhookRequest("https://mytelegrambot2.azurewebsites.net/webhook", null)
+                new SetWebhookRequest("https://mytelegrambot2.azurewebsites.net/webhook/post", null)
                 {
                     AllowedUpdates = new[] { UpdateType.Message }
                 });
