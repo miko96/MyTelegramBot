@@ -1,19 +1,44 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
-- main
+- master
+
+name: 0.0.$(Rev:r) # Build Number
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-20.04'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- script: echo $(Build.BuildNumber)
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- task: UseDotNet@2
+  displayName: 'Install .NET Core SDK'
+  inputs:
+    version: 3.1.x
+
+- script: dotnet restore --packages .nuget/packages
+  displayName: 'Restore Packages'
+
+- script: dotnet build --configuration Release --no-restore
+  displayName: 'Build Solution'
+
+- script: dotnet publish --configuration Release
+    --runtime linux-x64 --version-suffix $(Build.BuildNumber)
+    --output ./publish --no-restore
+  displayName: 'Publish Solution'
+
+- script: docker build -t containerregistry99.azurecr.io/mytelegrambot:$(Build.BuildNumber) .
+  displayName: 'Bake Docker Image'
+
+- task: Docker@2
+  displayName: Login to ACR
+  inputs:
+    command: login
+    containerRegistry: 'Container Registry Connection'
+
+- script: docker image push $(dockerImageTag)
+  displayName: 'Push Docker Image'
+
+- task: Docker@2
+  displayName: Logout of ACR
+  inputs:
+    command: logout
+    containerRegistry: 'Container Registry Connection'
